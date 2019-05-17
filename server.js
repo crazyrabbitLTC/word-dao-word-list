@@ -3,21 +3,24 @@
 const express = require("express");
 const app = express();
 const path = require("path");
-// const IPFS = require("ipfs");
+const IPFS = require("ipfs");
+const wordList = "WordDaoList.json";
+let hash = "";
 // const OrbitDB = require("orbit-db");
 // const ipfs = new IPFS(ipfsOptions)
 
-// ipfs.on('ready', async () => {
-//     // Create OrbitDB instance
-//     const orbitdb = new OrbitDB(ipfs)
-//     const db = await orbitdb.open('/orbitdb/Qmd8TmZrWASypEp4Er9tgWP4kCNQnW4ncSnvjvyHQ3EVSU/first-database')
-    
-//   })
+ipfs.on('ready', async () => {
+    hash = ipfs.addFromFs(wordList);
+  })
 
 
 app.get("/wordList", function(req, res) {
-  res.sendFile(path.join(__dirname, "WordDaoList.json"));
+  res.sendFile(path.join(__dirname, wordList));
 });
+
+app.get("/ipfs", function(req,res){
+    res.send(hash);
+})
 app.get("/", function(req, res) {
   res.send("Welcome to the wordList.");
 });
