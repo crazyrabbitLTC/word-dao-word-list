@@ -5,6 +5,16 @@ const IPFS = require("ipfs");
 const OrbitDB = require("orbit-db");
 const EthCrypto = require("eth-crypto");
 const signerIdentity = EthCrypto.createIdentity();
+console.log("PROCESS ARGUMENTS: ", process.argv[2]);
+const privateKey = process.argv[2];
+const publicKey = EthCrypto.publicKeyByPrivateKey(privateKey);
+const address = EthCrypto.publicKey.toAddress(publicKey);
+
+const identity =  {
+  address,
+  privateKey,
+  publicKey,
+}
 
 const path = require("path");
 const file = path.join("words.txt");
@@ -72,7 +82,7 @@ const createOrbitDB = async (ipfs, databaseName) => {
 const signWord = async (word, index) => {
   try {
     const message = EthCrypto.hash.keccak256({ word, index });
-    const signature = await EthCrypto.sign(signerIdentity.privateKey, message);
+    const signature = await EthCrypto.sign(privateKey, message);
     return signature;
   } catch (error) {
     console.log(error);
@@ -162,4 +172,4 @@ const app = async () => {
   //Save Word signatures to a file.
 };
 
-app();
+//app();
