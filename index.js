@@ -10,12 +10,6 @@ const privateKey = process.argv[2];
 const publicKey = EthCrypto.publicKeyByPrivateKey(privateKey);
 const address = EthCrypto.publicKey.toAddress(publicKey);
 
-const identity = {
-  address,
-  privateKey,
-  publicKey
-};
-
 const path = require("path");
 const file = path.join("words.txt");
 
@@ -105,7 +99,7 @@ const signLibrary = async (wordMap, db) => {
   const asyncForEach = async (wordMap, callback, db) => {
     console.log("wordMap Size: ", wordMap.size);
     let identity = db.identity.toJSON();
-    for (let index = 0; index < 5; index++) {
+    for (let index = 0; index < wordMap.size; index++) {
       let word = wordMap.get(index);
       let signature = await signWord(word, index);
       let wordObj = {
@@ -164,8 +158,6 @@ const writeToFile = async (wordHashFile, dbIdentity) => {
     console.log(error);
   }
 };
-
-const saveBlobToIPFS = async blob => {};
 
 const app = async () => {
   const wordMap = await processFile(file);
