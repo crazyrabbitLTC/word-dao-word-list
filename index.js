@@ -5,16 +5,16 @@ const IPFS = require("ipfs");
 const OrbitDB = require("orbit-db");
 const EthCrypto = require("eth-crypto");
 const signerIdentity = EthCrypto.createIdentity();
-console.log("PROCESS ARGUMENTS: ", process.argv[2]);
+//console.log("PROCESS ARGUMENTS: ", process.argv[2]);
 const privateKey = process.argv[2];
 const publicKey = EthCrypto.publicKeyByPrivateKey(privateKey);
 const address = EthCrypto.publicKey.toAddress(publicKey);
 
-const identity =  {
+const identity = {
   address,
   privateKey,
-  publicKey,
-}
+  publicKey
+};
 
 const path = require("path");
 const file = path.join("words.txt");
@@ -70,10 +70,20 @@ const processFile = async file => {
 const createOrbitDB = async (ipfs, databaseName) => {
   const orbitdb = await OrbitDB.createInstance(ipfs);
   // Create / Open a database
-//   const access = {
-//     // Give write access to ourselves
-//     write: [orbitdb.key.getPublic('hex')],
-//   }
+  //   const access = {
+  //     // Give write access to ourselves
+  //     write: [orbitdb.key.getPublic('hex')],
+  //   }
+  db = await orbitdb.create(databaseName, "keyvalue", {
+    accessController: {
+      write: [
+        // Give access to ourselves
+        orbitdb.identity.publicKey,
+        // Give access to the second peer
+        publicKey
+      ]
+    }
+  });
   db = await orbitdb.keyvalue(databaseName);
   await db.load();
   return db;
@@ -137,39 +147,40 @@ const addWordToDB = async (index, wordObj, db) => {
 
 const writeToFile = async (wordHashFile, dbIdentity) => {
   // stringify JSON Object
-  const jsonContent = JSON.stringify({dbIdentity, words: wordHashFile});
+  const jsonContent = JSON.stringify({ dbIdentity, words: wordHashFile });
   const identity = JSON.stringify(dbIdentity);
   try {
-    fs.writeFile(
-      `WordDao_SignedWordList.json`,
-      jsonContent,
-      "utf8",
-      function(err) {
-        if (err) {
-          console.log("An error occured while writing JSON Object to File.");
-          return console.log(err);
-        }
-
-        console.log("JSON file has been saved.");
+    fs.writeFile(`WordDao_SignedWordList.json`, jsonContent, "utf8", function(
+      err
+    ) {
+      if (err) {
+        console.log("An error occured while writing JSON Object to File.");
+        return console.log(err);
       }
-    );
+
+      console.log("JSON file has been saved.");
+    });
   } catch (error) {
     console.log(error);
   }
 };
 
+const saveBlobToIPFS = async blob => {};
+
 const app = async () => {
   const wordMap = await processFile(file);
   console.log("Map size: ", wordMap.size);
   const ipfs = await getIPFS();
-  const db = await createOrbitDB(ipfs, "DennisonsDatabase");
+  const db = await createOrbitDB(ipfs, publicKey);
 
   const dbIdentity = db.identity.toJSON();
   console.log(`Orbit DB Identity: ${dbIdentity}`);
   const arrayOfSignedWords = await signLibrary(wordMap, db);
   console.log(arrayOfSignedWords);
   await writeToFile(arrayOfSignedWords, dbIdentity);
+  const ipfsBlobHash = await ipfs.addFromFs(`WordDao_SignedWordList.json`);
+  console.log("The final Hash: ", ipfsBlobHash);
   //Save Word signatures to a file.
 };
 
-//app();
+app();
