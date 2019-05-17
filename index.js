@@ -85,7 +85,7 @@ const createOrbitDB = async (ipfs, databaseName) => {
 
 const signWord = async (word, index) => {
   try {
-    const message = EthCrypto.hash.keccak256({ word, index });
+    const message = EthCrypto.hash.keccak256(JSON.stringify({ word, index }));
     const signature = await EthCrypto.sign(privateKey, message);
     return signature;
   } catch (error) {
@@ -115,6 +115,7 @@ const signLibrary = async (wordMap, db) => {
 
       console.log({ ...wordObj, orbitDBHash: wordHash });
       hashArray.push({ ...wordObj, orbitDBHash: wordHash });
+      
     }
   };
 
@@ -158,6 +159,8 @@ const writeToFile = async (wordHashFile, dbIdentity) => {
     console.log(error);
   }
 };
+
+
 
 const app = async () => {
   const wordMap = await processFile(file);
