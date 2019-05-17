@@ -85,7 +85,7 @@ const signLibrary = async (wordMap, db) => {
   const asyncForEach = async (wordMap, callback, db) => {
     console.log("wordMap Size: ", wordMap.size);
     let identity = db.identity.toJSON();
-    for (let index = 0; index < wordMap.size; index++) {
+    for (let index = 0; index < 5; index++) {
       let word = wordMap.get(index);
       let signature = await signWord(word, index);
       let wordObj = {
