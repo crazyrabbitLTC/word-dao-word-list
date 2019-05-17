@@ -16,7 +16,7 @@ const path = require("path");
 
 
 app.get("/wordList", function(req, res) {
-  res.sendFile(path.join(__dirname, "WordDao_SignedWordList.json"));
+  res.sendFile(path.join(__dirname, "WordDaoList.json"));
 });
 app.get("/", function(req, res) {
   res.send("Welcome to the wordList.");
